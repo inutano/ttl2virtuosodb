@@ -21,7 +21,7 @@ VIRTUOSO_PORT="8890"
 VIRTUOSO_CONTAINER_IMAGE="openlink/virtuoso-opensource-7:7.2.6-r1-g0a3336c"
 RDF_GRAPH_NAME="https://bio.cow/graph"
 
-# Check the number of cores
+# check the total amount of memory
 case "$(uname -s)" in
   Linux*)
     mem=$(vmstat -s | grep "total memory" | awk '$0=$1')
@@ -35,19 +35,19 @@ esac
 if [[ ${mem} -ge 64000000 ]]; then
   NumOfBuffers=5450000
   MaxDirtyBuffers=4000000
-elif [[ ${cores} -ge 48000000 ]]; then
+elif [[ ${mem} -ge 48000000 ]]; then
   NumOfBuffers=4000000
   MaxDirtyBuffers=3000000
-elif [[ ${cores} -ge 32000000 ]]; then
+elif [[ ${mem} -ge 32000000 ]]; then
   NumOfBuffers=2720000
   MaxDirtyBuffers=2000000
-elif [[ ${cores} -ge 16000000 ]]; then
+elif [[ ${mem} -ge 16000000 ]]; then
   NumOfBuffers=1360000
   MaxDirtyBuffers=1000000
-elif [[ ${cores} -ge 8000000 ]]; then
+elif [[ ${mem} -ge 8000000 ]]; then
   NumOfBuffers=680000
   MaxDirtyBuffers=500000
-elif [[ ${cores} -ge 4000000 ]]; then
+elif [[ ${mem} -ge 4000000 ]]; then
   NumOfBuffers=340000
   MaxDirtyBuffers=250000
 else
