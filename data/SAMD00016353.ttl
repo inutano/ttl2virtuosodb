@@ -1,0 +1,78 @@
+@base <http://schema.org/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://identifiers.org/biosample/SAMD00016353> a <DataRecord>;
+  <dateCreated> "2010-03-26T00:00:00Z"^^<Date>;
+  <dateModified> "2019-03-13T00:03:20.479Z"^^<Date>;
+  <identifier> "biosample:SAMD00016353";
+  <isPartOf> <https://www.ebi.ac.uk/biosamples/samples>;
+  <mainEntity> [
+    a <http://purl.obolibrary.org/obo/OBI_0000747>,
+      <Sample>;
+    <additionalProperty> [
+      a <PropertyValue>;
+      <name> "common name";
+      <value> "Bacillus subtilis subsp. natto"
+    ], [
+      a <PropertyValue>;
+      <name> "INSDC center name";
+      <value> "Bioinformatics Lab."
+    ], [
+      a <PropertyValue>;
+      <name> "INSDC secondary accession";
+      <value> "DRS000001"
+    ], [
+      a <PropertyValue>;
+      <name> "INSDC status";
+      <value> "live"
+    ], [
+      a <PropertyValue>;
+      <name> "strain";
+      <value> "BEST195"
+    ], [
+      a <PropertyValue>;
+      <name> "INSDC first public";
+      <value> "2010-03-26T00:00:00Z"
+    ], [
+      a <PropertyValue>;
+      <name> "sample name";
+      <value> "DRS000001"
+    ], [
+      a <PropertyValue>;
+      <name> "INSDC last update";
+      <value> "2014-11-12T03:29:46Z"
+    ], [
+      a <PropertyValue>;
+      <name> "sub species";
+      <value> "natto"
+    ], [
+      a <PropertyValue>;
+      <name> "NCBI submission model";
+      <value> "Generic"
+    ], [
+      a <PropertyValue>;
+      <name> "organism";
+      <value> "Bacillus subtilis subsp. natto BEST195";
+      <valueReference> <http://purl.obolibrary.org/obo/NCBITaxon_645657>
+    ], [
+      a <PropertyValue>;
+      <name> "description title";
+      <value> "DRS000001"
+    ], [
+      a <PropertyValue>;
+      <name> "sample comment";
+      <value> "Genomic DNA from Bacillus subtilis subsp. natto BEST195, without pBEST195L plasid."
+    ], [
+      a <PropertyValue>;
+      <name> "NCBI submission package";
+      <value> "Generic.1.0"
+    ];
+    <identifier> "biosample:SAMD00016353";
+    <name> "SAMD00016353";
+    <sameAs> <http://identifiers.org/biosample/SAMD00016353>;
+    <subjectOf> "https://www.ebi.ac.uk/ena/data/view/SAMD00016353"
+  ] .
+
+<http://purl.obolibrary.org/obo/NCBITaxon_645657> a <DefinedTerm> .
+
+<https://www.ebi.ac.uk/biosamples/samples> a <Dataset> .

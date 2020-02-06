@@ -1,0 +1,28 @@
+@prefix : <http://bio.cow/ontology/sra-experiement/> .
+@prefix id: <http://identifiers.org/insdc.sra/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dct: <http://purl.obolibrary.org/obo/> .
+
+id:DRX000001 a :Experiment ;
+  rdfs:label "DRX000001: B. subtilis subsp. natto genome sequencing September 2008" ;
+  dct:identifier "DRX000001" ;
+  :designDesctiption "Randomly fragmented by ultrasonic waves." ;
+  dct:description "Randomly fragmented by ultrasonic waves." ;
+  :title "B. subtilis subsp. natto genome sequencing September 2008" ;
+  :platform [
+    a :ILLUMINA ;
+    :instrumentModel :Illumina_Genome_Analyzer_II
+  ] ;
+  :design [
+    a :ExperimentDesign ;
+    :libraryName "B.subtilis natto BEST195 Genomic DNA fragments, isolated Aug 2008" ;
+    :libraryStrategy :WGS ;
+    :librarySource :GENOMIC ;
+    :librarySelection :RANDOM ;
+    :libraryConstructionProtocol "The DNA is purified through the ultracentrifugation in presence of cecium-chloride and ethidium-bromide, then fragmented by ultrasonic waves. Fragments around 160bp were isolated by gel electrophoresis." ;
+    :libraryLayout [
+      a :PAIRED ;
+      :nominalLength "163" ;
+      :nominalSdev "24.7558"
+    ]
+  ] .
