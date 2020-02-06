@@ -1,0 +1,138 @@
+#!/bin/sh
+#
+# ttl2virtuosodb
+#
+# Author: Yoko Okabeppu (https://github.com/okbp) for docker-compose yaml template and ttl loading script
+#         Tazro Inutano Ohta (https://github.com/inutano) for the rest of the project
+#
+#
+# Usage:
+#   Load ttl files in the data directory and generate virtuoso.db file
+#   $ ttl2virtuosodb up
+#
+#   Shut down the virtuoso server and remove container
+#   $ ttl2virtuosodb down
+#
+set -eux
+
+# ttl2virtuosodb version
+VERSION="0.1.0"
+VIRTUOSO_CONTAINER_IMAGE="openlink/virtuoso-opensource-7:7.2.6-r1-g0a3336c"
+
+# Check the number of cores
+case "$(uname -s)" in
+  Linux*)
+    cores=$(nproc)
+    ;;
+  Darwin)
+    cores=$(sysctl -n hw.ncpu)
+    ;;
+esac
+
+# Set paramerters based on the number of cores
+if [[ ${cores} -ge 64 ]]; then
+  NumOfBuffers=5450000
+  MaxDirtyBuffers=4000000
+elif [[ ${cores} -ge 48 ]]; then
+  NumOfBuffers=4000000
+  MaxDirtyBuffers=3000000
+elif [[ ${cores} -ge 32 ]]; then
+  NumOfBuffers=2720000
+  MaxDirtyBuffers=2000000
+elif [[ ${cores} -ge 16 ]]; then
+  NumOfBuffers=1360000
+  MaxDirtyBuffers=1000000
+elif [[ ${cores} -ge 8 ]]; then
+  NumOfBuffers=680000
+  MaxDirtyBuffers=500000
+elif [[ ${cores} -ge 4 ]]; then
+  NumOfBuffers=340000
+  MaxDirtyBuffers=250000
+else
+  NumOfBuffers=170000
+  MaxDirtyBuffers=130000
+fi
+
+# Directories
+BASE_DIR="$(cd ${0} && pwd -P)/.."
+DATA_DIR="${BASE_DIR}/data"
+DB_DIR="${BASE_DIR}/db"
+mkdir -p "${DB_DIR}"
+
+# Files
+docker_compose_yml="${BASE_DIR}/docker-compose.yml"
+virtuoso_db_file="${DB_DIR}/virtuoso.db"
+
+# functions
+print_version() {
+  echo "ttl2virtuosodb: ${VERSION}"
+}
+
+print_help() {
+  cat <<EOS
+ttl2virtuosodb version: ${VERSION}
+Usage:
+  ttl2virtuosodb [up|down]
+EOS
+}
+
+generate_compose_yml() {
+  cat <<EOS > "${docker_compose_yml}"
+version: '3'
+services:
+  virtuoso:
+    image: ${VIRTUOSO_CONTAINER_IMAGE}
+    container_name: ttl2virtuosodb
+    environment:
+      DBA_PASSWORD: "dba"
+      VIRT_Parameters_DirsAllowed: "., ../vad, /usr/share/proj, /database, /data"
+      VIRT_Parameters_NumberOfBuffers: ${NumOfBuffers}
+      VIRT_Parameters_MaxDirtyBuffers: ${MaxDirtyBuffers}
+      VIRT_Client_SQL_PREFETCH_ROWS: "10000"
+      VIRT_Client_SQL_PREFETCH_BYTES: "160000"
+      VIRT_SPARQL_ResultSetMaxRows: "1000000"
+      VIRT_SPARQL_MaxSortedTopRows: "100000"
+      VIRT_SPARQL_MaxQueryExecutionTime: "300"
+      VIRT_SPARQL_MaxQueryCostEstimationTime: "-1"
+    ports:
+      - 8890:8890
+    user: ${UID:-0}:${GID:-0}
+    volumes:
+      - ${BASE_DIR}/db:/database
+      - ${BASE_DIR}/data:/data
+EOS
+}
+
+compose_up() {
+  cd ${BASE_DIR}
+  docker-compose up -d
+}
+
+load_ttl(){}
+
+compose_down() {
+  cd ${BASE_DIR}
+  docker-compose down
+}
+
+# argparse
+case "${1}" in
+  -v|--version)
+    print_version
+    exit 0
+    ;;
+  -h|--help)
+    print_help
+    exit 0
+    ;;
+  "up")
+    compose_up
+    ;;
+  "down")
+    compose_down
+    ;;
+  *)
+    print_help
+    exit 0
+    ;;
+esac
