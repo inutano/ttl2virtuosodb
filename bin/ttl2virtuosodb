@@ -128,7 +128,9 @@ load_parallel() {
 
 load_ttl() {
   wait_virtuoso
-  load_parallel
+  if [[ ! -e "${virtuoso_db_file}" ]]; then
+    load_parallel
+  fi
 }
 
 test_sparql() {
