@@ -1,0 +1,18 @@
+prefix exp: <http://bio.cow/ontology/sra-experiement/>
+prefix idont: <http://identifiers.org/ontology/>
+prefix schema: <http://schema.org/>
+
+select distinct ?experiment ?biosample ?name ?value
+where {
+  ?experiment a exp:Experiment ;
+    idont:link ?biosample .
+  ?biosample schema:isPartOf <https://www.ebi.ac.uk/biosamples/samples> ;
+    schema:mainEntity [
+      schema:additionalProperty [
+        a schema:PropertyValue ;
+        schema:name ?name ;
+        schema:value ?value
+      ]
+    ] .
+}
+limit 10
