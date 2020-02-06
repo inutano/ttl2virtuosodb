@@ -13,6 +13,8 @@
 #   Shut down the virtuoso server and remove container
 #   $ ttl2virtuosodb down
 #
+#   Change port number of Docker host connected to virtuoso server in the contatiner
+#   $ export VIRTUOSO_PORT=<your favorite port number>
 set -eux
 
 # ttl2virtuosodb version
@@ -96,7 +98,7 @@ services:
       VIRT_SPARQL_MaxQueryExecutionTime: "300"
       VIRT_SPARQL_MaxQueryCostEstimationTime: "-1"
     ports:
-      - 8890:8890
+      - "${VIRTUOSO_PORT:-8890}:8890"
     user: "${UID:-0}:${GID:-0}"
     volumes:
       - ${BASE_DIR}/db:/database
