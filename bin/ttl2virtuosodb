@@ -76,8 +76,9 @@ Usage:
 EOS
 }
 
-generate_compose_yml() {
-  cat <<EOS > "${docker_compose_yml}"
+generate_docker_compose_yml() {
+  if [[ ! -e "${docker_compose_yml}" ]]; then
+    cat <<EOS > "${docker_compose_yml}"
 version: '3'
 services:
   virtuoso:
@@ -96,15 +97,17 @@ services:
       VIRT_SPARQL_MaxQueryCostEstimationTime: "-1"
     ports:
       - 8890:8890
-    user: ${UID:-0}:${GID:-0}
+    user: "${UID:-0}:${GID:-0}"
     volumes:
       - ${BASE_DIR}/db:/database
       - ${BASE_DIR}/data:/data
 EOS
+  fi
 }
 
-compose_up() {
+up() {
   cd ${BASE_DIR}
+  generate_docker_compose_yml
   docker-compose up -d
 }
 
@@ -112,12 +115,13 @@ load_ttl(){
   echo ""
 }
 
-compose_down() {
+down() {
   cd ${BASE_DIR}
   docker-compose down
+  docker-compose rm
 }
 
-# argparse
+# argparse and run
 case "${1}" in
   -v|--version)
     print_version
@@ -128,10 +132,10 @@ case "${1}" in
     exit 0
     ;;
   "up")
-    compose_up
+    up
     ;;
   "down")
-    compose_down
+    down
     ;;
   *)
     print_help
