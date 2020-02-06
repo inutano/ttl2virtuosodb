@@ -150,6 +150,12 @@ down() {
   docker-compose rm
 }
 
+clean() {
+  cd ${BASE_DIR}
+  rm "${docker_compose_yml}"
+  rm -fr "${DB_DIR}"/virtuoso*
+}
+
 # argparse and run
 case "${1}" in
   -v|--version)
@@ -165,6 +171,9 @@ case "${1}" in
     ;;
   "down")
     down
+    ;;
+  "clean")
+    clean
     ;;
   *)
     print_help
