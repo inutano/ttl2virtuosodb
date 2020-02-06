@@ -1,10 +1,10 @@
 # ttl2virtuosodb
 
-Load RDF-TTL format data to the RDF triplestore [Virtuoso]() docker conatiner and generate virtuoso.db file for migration.
+Load RDF-Turtle format data in parallel to the RDF triplestore [Virtuoso docker conatiner](https://hub.docker.com/r/openlink/virtuoso-opensource-7) and generate `virtuoso.db` file for migration.
 
 ## Requirement
 
-- Docker
+- Docker-compose (Compose file version 3)
 
 ## Usage
 
