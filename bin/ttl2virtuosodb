@@ -126,9 +126,33 @@ load_parallel() {
   exec_isql 1111 dba dba exec="checkpoint;"
 }
 
-load_ttl(){
+load_ttl() {
   wait_virtuoso
   load_parallel
+}
+
+test_sparql() {
+  read -r -d '' query <<'EOS'
+prefix exp: <http://bio.cow/ontology/sra-experiement/>
+prefix idont: <http://identifiers.org/ontology/>
+prefix schema: <http://schema.org/>
+
+select distinct ?experiment ?biosample ?name ?value
+where {
+  ?experiment a exp:Experiment ;
+    idont:link ?biosample .
+  ?biosample schema:isPartOf <https://www.ebi.ac.uk/biosamples/samples> ;
+    schema:mainEntity [
+      schema:additionalProperty [
+        a schema:PropertyValue ;
+        schema:name ?name ;
+        schema:value ?value
+      ]
+    ] .
+}
+limit 10
+EOS
+  curl --data-urlencode "query=${query}" http://localhost:${VIRTUOSO_PORT}/sparql
 }
 
 up() {
@@ -136,6 +160,7 @@ up() {
   generate_docker_compose_yml
   docker-compose up -d
   load_ttl
+  test_sparql
 }
 
 down() {
