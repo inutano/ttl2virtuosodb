@@ -24,30 +24,30 @@ RDF_GRAPH_NAME="https://bio.cow/graph"
 # Check the number of cores
 case "$(uname -s)" in
   Linux*)
-    cores=$(nproc)
+    mem=$(vmstat -s | grep "total memory" | awk '$0=$1')
     ;;
   Darwin)
-    cores=$(sysctl -n hw.ncpu)
+    mem=$(sysctl -n hw.ncpu)
     ;;
 esac
 
-# Set paramerters based on the number of cores
-if [[ ${cores} -ge 64 ]]; then
+# Set paramerters based on the total amount of memory
+if [[ ${mem} -ge 64000000 ]]; then
   NumOfBuffers=5450000
   MaxDirtyBuffers=4000000
-elif [[ ${cores} -ge 48 ]]; then
+elif [[ ${cores} -ge 48000000 ]]; then
   NumOfBuffers=4000000
   MaxDirtyBuffers=3000000
-elif [[ ${cores} -ge 32 ]]; then
+elif [[ ${cores} -ge 32000000 ]]; then
   NumOfBuffers=2720000
   MaxDirtyBuffers=2000000
-elif [[ ${cores} -ge 16 ]]; then
+elif [[ ${cores} -ge 16000000 ]]; then
   NumOfBuffers=1360000
   MaxDirtyBuffers=1000000
-elif [[ ${cores} -ge 8 ]]; then
+elif [[ ${cores} -ge 8000000 ]]; then
   NumOfBuffers=680000
   MaxDirtyBuffers=500000
-elif [[ ${cores} -ge 4 ]]; then
+elif [[ ${cores} -ge 4000000 ]]; then
   NumOfBuffers=340000
   MaxDirtyBuffers=250000
 else
