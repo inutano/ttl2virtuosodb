@@ -13,13 +13,13 @@
 #   Shut down the virtuoso server and remove container
 #   $ ttl2virtuosodb down
 #
-#   Change port number of Docker host connected to virtuoso server in the contatiner
-#   $ export VIRTUOSO_PORT=<your favorite port number>
 set -eux
 
 # ttl2virtuosodb version
 VERSION="0.1.0"
+VIRTUOSO_PORT="8890"
 VIRTUOSO_CONTAINER_IMAGE="openlink/virtuoso-opensource-7:7.2.6-r1-g0a3336c"
+RDF_GRAPH_NAME="https://bio.cow/graph"
 
 # Check the number of cores
 case "$(uname -s)" in
@@ -98,7 +98,7 @@ services:
       VIRT_SPARQL_MaxQueryExecutionTime: "300"
       VIRT_SPARQL_MaxQueryCostEstimationTime: "-1"
     ports:
-      - "${VIRTUOSO_PORT:-8890}:8890"
+      - "${VIRTUOSO_PORT}:8890"
     user: "${UID:-0}:${GID:-0}"
     volumes:
       - ${BASE_DIR}/db:/database
@@ -107,14 +107,35 @@ EOS
   fi
 }
 
+wait_virtuoso() {
+  while [[ -z $(curl "localhost:${VIRTUOSO_PORT}/sparql" 2>/dev/null) ]] ; do
+    sleep 1
+  done
+}
+
+exec_isql() {
+  docker exec "ttl2virtuosodb" /opt/virtuoso-opensource/bin/isql ${1}
+}
+
+load_parallel() {
+  exec_isql 1111 dba dba exec="ld_dir_all('/data', '*.ttl', '${RDF_GRAPH_NAME}');"
+  for i in $(jot 4); do
+    exec_isql 1111 dba dba exec="rdf_loader_run();" &
+  done
+  wait
+  exec_isql 1111 dba dba exec="checkpoint;"
+}
+
+load_ttl(){
+  wait_virtuoso
+  load_parallel
+}
+
 up() {
   cd ${BASE_DIR}
   generate_docker_compose_yml
   docker-compose up -d
-}
-
-load_ttl(){
-  echo ""
+  load_ttl
 }
 
 down() {
