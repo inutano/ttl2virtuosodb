@@ -21,15 +21,21 @@ VIRTUOSO_PORT="8890"
 VIRTUOSO_CONTAINER_IMAGE="openlink/virtuoso-opensource-7:7.2.6-r1-g0a3336c"
 RDF_GRAPH_NAME="https://bio.cow/graph"
 
+# Runtime parameters - change if needed
+NOLOAD="false" # or true
+MAX_MEMORY_USAGE=0   # amount of memory (integer)
+
 # check the total amount of memory
-case "$(uname -s)" in
-  Linux*)
-    mem=$(vmstat -s | grep "total memory" | awk '$0=$1')
-    ;;
-  Darwin)
-    mem=$(sysctl -n hw.ncpu)
-    ;;
-esac
+if [[ "${MAX_MEMORY_USAGE}" -eq 0 ]]; then
+  case "$(uname -s)" in
+    Linux*)
+      mem=$(vmstat -s | grep "total memory" | awk '$0=$1')
+      ;;
+    Darwin)
+      mem=$(sysctl -n hw.ncpu)
+      ;;
+  esac
+fi
 
 # Set paramerters based on the total amount of memory
 if [[ ${mem} -ge 64000000 ]]; then
@@ -128,7 +134,7 @@ load_parallel() {
 
 load_ttl() {
   wait_virtuoso
-  if [[ ! -e "${virtuoso_db_file}" ]]; then
+  if [[ "${NOLOAD}" == "false" ]]; then
     load_parallel
   fi
 }
