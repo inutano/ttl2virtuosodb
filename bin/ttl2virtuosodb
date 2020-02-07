@@ -109,7 +109,7 @@ EOS
 
 wait_virtuoso() {
   while [[ -z $(curl "localhost:${VIRTUOSO_PORT}/sparql" 2>/dev/null) ]] ; do
-    sleep 1
+    sleep 5
   done
 }
 
