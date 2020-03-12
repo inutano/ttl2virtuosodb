@@ -114,7 +114,7 @@ EOS
 }
 
 wait_virtuoso() {
-  while [[ -z $(curl "localhost:${VIRTUOSO_PORT}/sparql" 2>/dev/null) ]] ; do
+  while [[ -z $(curl "localhost:${VIRTUOSO_PORT}/sparql" 2>/dev/null | head -c 5) ]] ; do
     sleep 5
   done
 }
