@@ -152,6 +152,12 @@ up() {
   test_sparql
 }
 
+add() {
+  cd ${BASE_DIR}
+  load_ttl
+  test_sparql
+}
+
 down() {
   cd ${BASE_DIR}
   docker-compose down
@@ -176,6 +182,9 @@ case "${1}" in
     ;;
   "up")
     up
+    ;;
+  "add")
+    add
     ;;
   "down")
     down
