@@ -125,7 +125,7 @@ exec_isql() {
 
 load_parallel() {
   exec_isql 1111 dba dba exec="ld_dir_all('/data', '*.ttl', '${RDF_GRAPH_NAME}');"
-  for i in $(seq 4); do
+  for i in $(seq 8); do
     exec_isql 1111 dba dba exec="rdf_loader_run();" &
   done
   wait
