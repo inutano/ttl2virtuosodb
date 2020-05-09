@@ -130,6 +130,8 @@ load_parallel() {
   done
   wait
   exec_isql 1111 dba dba exec="checkpoint;"
+  exec_isql 1111 dba dba exec="checkpoint_interval (0);"
+  exec_isql 1111 dba dba exec="DB.DBA.VT_INC_INDEX_DB_DBA_RDF_OBJ ();"
 }
 
 load_ttl() {
