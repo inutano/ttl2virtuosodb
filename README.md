@@ -108,4 +108,4 @@ Show version information:
 $ ./bin/ttl2virtuosodb version
 ```
 
-To access the Virtuoso SPARQL endpoint via web browser, open [`localhost:8890/sparql`](https://localhost:8890/sparql):
+To access the Virtuoso SPARQL endpoint via web browser, open [`localhost:8890/sparql`](http://localhost:8890/sparql):
