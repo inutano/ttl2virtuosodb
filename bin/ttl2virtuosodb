@@ -6,7 +6,7 @@
 #          Tazro Inutano Ohta (https://github.com/inutano) for the rest
 #
 #set -eEux # For debugging
-VERSION="0.2.1"
+VERSION="0.2.2"
 
 #
 # DEFAULT SETTINGS: CHANGE IF NEEDED
@@ -201,10 +201,23 @@ load_ttl() {
   load_parallel
 }
 
+query_sparql() {
+  local query=${1}
+  local endpoint_url="http://localhost:${VIRTUOSO_PORT}/sparql"
+
+  if [[ ! -z $(which jq) ]]; then
+    query_header="application/json"
+    curl -s --header "Accept: ${query_header}" --data-urlencode "query=$(cat ${query})" ${endpoint_url} | jq .
+  else
+    query_header="text/tab-separated-values"
+    curl -s --header "Accept: ${query_header}" --data-urlencode "query=$(cat ${query})" ${endpoint_url}
+  fi
+}
+
 test_sparql() {
   find  "${SPARQL_DIR}" -name '*.rq' -type f | while read query; do
     echo "Query: $(basename ${query})"
-    curl -s --data-urlencode "query=$(cat ${query})" "http://localhost:${VIRTUOSO_PORT}/sparql"
+    query_sparql ${query}
   done
 }
 
