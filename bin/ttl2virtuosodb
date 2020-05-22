@@ -151,6 +151,9 @@ EOS
 
 load_parallel() {
   wait_virtuoso
+  exec_isql "DB.DBA.RDF_OBJ_FT_RULE_ADD (null, null, 'All');"
+  exec_isql "DB.DBA.RDF_OBJ_FT_RULE_DEL (null, null, 'All');"
+
   exec_isql "ld_dir_all('/data', '*.ttl', '${RDF_GRAPH_NAME}');" # Load directory of turtle files
 
   for i in $(seq ${NUMBER_OF_THREADS}); do
@@ -159,8 +162,16 @@ load_parallel() {
   wait
 
   exec_isql "checkpoint;"                                        # Checkpoint after loading
+}
+
+create_text_index() {
+  wait_virtuoso
+  exec_isql "DB.DBA.VT_INC_INDEX_DB_DBA_RDF_OBJ ();"            # Create text index synchronously
+}
+
+disable_checkpoint() {
+  wait_virtuoso
   exec_isql "checkpoint_interval (0);"                           # Disable automatic checkpoint
-  exec_isql "DB.DBA.VT_INC_INDEX_DB_DBA_RDF_OBJ ();"             # Create text index synchronously
 }
 
 wait_virtuoso() {
@@ -207,15 +218,24 @@ show_status() {
 #
 up() {
   virtuoso_up
+  show_status
 }
 
 down() {
   virtuoso_down
+  show_status
 }
 
 load() {
   virtuoso_up
   load_ttl
+  test_sparql
+  show_status
+}
+
+index() {
+  virtuoso_up
+  create_text_index
   test_sparql
   show_status
 }
@@ -250,6 +270,7 @@ Subcommand:
   down                    Stop Virtuoso, DB files remain in the db diretory
   load                    Start Virtuoso and load data; add data to the existing
                           graph if virtuoso.db already exists
+  index                   Create text index of loaded RDF data
   clean                   Remove files in db directory and docker-compose.yml
   test                    Run SPARQL queries (*.rq) in the sparql directory
   status                  Show status of docker-compose and docker containers
@@ -282,6 +303,9 @@ main() {
       ;;
     "load")
       load
+      ;;
+    "index")
+      index
       ;;
     "clean")
       clean
