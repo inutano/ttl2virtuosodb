@@ -6,7 +6,7 @@
 #          Tazro Inutano Ohta (https://github.com/inutano) for the rest
 #
 #set -eEux # For debugging
-VERSION="0.3.0"
+VERSION="0.4.0"
 
 #
 # DEFAULT SETTINGS: CHANGE IF NEEDED
@@ -31,15 +31,9 @@ setup_t2v() {
 set_directories() {
   # Directories
   BASE_DIR="$(pwd -P)"
-
-  DATA_DIR="${BASE_DIR}/data"
-  mkdir -p "${DATA_DIR}"
-
-  DB_DIR="${BASE_DIR}/db"
-  mkdir -p "${DB_DIR}"
-
-  SPARQL_DIR="${BASE_DIR}/sparql"
-  mkdir -p "${SPARQL_DIR}"
+  set_data_dir
+  set_db_dir
+  set_sparql_dir
 
   # Files
   docker_compose_yml="${BASE_DIR}/docker-compose.yml"
@@ -48,44 +42,61 @@ set_directories() {
   cd ${BASE_DIR}
 }
 
-set_port_number() {
-  if [[ -z "${T2V_VIRTUOSO_PORT}" ]]; then
-    VIRTUOSO_PORT=${DEFAULT_VIRTUOSO_PORT}
+set_data_dir() {
+  if [[ -z ${DATA_DIR} ]]; then
+    DATA_DIR="${BASE_DIR}/data"
+    mkdir -p "${DATA_DIR}"
   else
-    VIRTUOSO_PORT="${T2V_VIRTUOSO_PORT}"
+    DATA_DIR=$(cd ${DATA_DIR} && pwd -P)
+  fi
+}
+
+set_db_dir() {
+  if [[ -z ${DB_DIR} ]]; then
+    DB_DIR="${BASE_DIR}/sparql"
+    mkdir -p "${DB_DIR}"
+  else
+    DB_DIR=$(cd ${DB_DIR} && pwd -P)
+  fi
+}
+
+set_sparql_dir() {
+  if [[ -z ${SPARQL_DIR} ]]; then
+    SPARQL_DIR="${BASE_DIR}/sparql"
+    mkdir -p "${SPARQL_DIR}"
+  else
+    SPARQL_DIR=$(cd ${SPARQL_DIR} && pwd -P)
+  fi
+}
+
+set_port_number() {
+  if [[ -z "${VIRTUOSO_PORT}" ]]; then
+    VIRTUOSO_PORT=${DEFAULT_VIRTUOSO_PORT}
   fi
 }
 
 set_number_of_threads() {
-  if [[ -z "${T2V_NUMBER_OF_THREADS}" ]]; then
+  if [[ -z "${NUMBER_OF_THREADS}" ]]; then
     NUMBER_OF_THREADS="${DEFAULT_NUMBER_OF_THREADS}"
-  else
-    NUMBER_OF_THREADS="${T2V_NUMBER_OF_THREADS}"
   fi
 }
 
 set_graph_name() {
-  if [[ -z "${T2V_RDF_GRAPH_NAME}" ]]; then
+  if [[ -z "${RDF_GRAPH_NAME}" ]]; then
     RDF_GRAPH_NAME="${DEFAULT_RDF_GRAPH_NAME}"
-  else
-    RDF_GRAPH_NAME="${T2V_RDF_GRAPH_NAME}"
   fi
 }
 
 # Define memory amount to use for loading
-# Use "VIRTUOSO_MAX_MEMORY", or max memory amount of the system
 set_max_memory() {
-  if [[ ! -z "${T2V_VIRTUOSO_MAX_MEMORY}" ]]; then
-    # Use environment variable if it's set
-    MEM=${T2V_VIRTUOSO_MAX_MEMORY}
-  else
+  if [[ -z "${VIRTUOSO_MAX_MEMORY}" ]]; then
     # Use system's max memory for default
     case "$(uname -s)" in
       Linux*)
-        MEM=$(vmstat -s | grep "total memory" | awk '$0=$1')
+        VIRTUOSO_MAX_MEMORY=$(vmstat -s | grep "total memory" | awk '$0=$1')
         ;;
       Darwin)
-        MEM=$(sysctl -n hw.ncpu)
+        VIRTUOSO_MAX_MEMORY=$(sysctl -n hw.ncpu)
         ;;
     esac
   fi
@@ -93,23 +104,23 @@ set_max_memory() {
 }
 
 set_buffers() {
-  # Set paramerters based on the total amount of memory
-  if [[ ${MEM} -ge 64000000 ]]; then
+  # Set paramerters based on the total amount of VIRTUOSO_MAX_MEMORYory
+  if [[ ${VIRTUOSO_MAX_MEMORY} -ge 64000000 ]]; then
     NumOfBuffers=5450000
     MaxDirtyBuffers=4000000
-  elif [[ ${MEM} -ge 48000000 ]]; then
+  elif [[ ${VIRTUOSO_MAX_MEMORY} -ge 48000000 ]]; then
     NumOfBuffers=4000000
     MaxDirtyBuffers=3000000
-  elif [[ ${MEM} -ge 32000000 ]]; then
+  elif [[ ${VIRTUOSO_MAX_MEMORY} -ge 32000000 ]]; then
     NumOfBuffers=2720000
     MaxDirtyBuffers=2000000
-  elif [[ ${MEM} -ge 16000000 ]]; then
+  elif [[ ${VIRTUOSO_MAX_MEMORY} -ge 16000000 ]]; then
     NumOfBuffers=1360000
     MaxDirtyBuffers=1000000
-  elif [[ ${MEM} -ge 8000000 ]]; then
+  elif [[ ${VIRTUOSO_MAX_MEMORY} -ge 8000000 ]]; then
     NumOfBuffers=680000
     MaxDirtyBuffers=500000
-  elif [[ ${MEM} -ge 4000000 ]]; then
+  elif [[ ${VIRTUOSO_MAX_MEMORY} -ge 4000000 ]]; then
     NumOfBuffers=340000
     MaxDirtyBuffers=250000
   else
@@ -295,7 +306,7 @@ print_help() {
   cat <<EOS
 ttl2virtuosodb version: ${VERSION}
 Usage:
-  ttl2virtuosodb [up|down|add|clean|test|status|help|version]
+  ttl2virtuosodb [-d|-db|-rq|-p|-t|-g|-m] [up|down|add|clean|test|status|help|version]
 
 Subcommand:
   up                      Start Viruoso using docker-compose with db/viruoso.db
@@ -310,11 +321,14 @@ Subcommand:
   help (-h|--help)        Show this help message
   version (-v|--version)  Show version information
 
-Envrionment variable:
-  T2V_VIRTUOSO_PORT           Set Virtuoso port number (default: 8890)
-  T2V_VIRTUOSO_MAX_MEMORY     Set maximum memory usage (in KB, default: system max memory)
-  T2V_NUMBER_OF_THREADS       Set number of threads for loading (default: 4)
-  T2V_RDF_GRAPH_NAME          Set RDF graph name (default: http://bio.cow/graph)
+Options:
+  -d <dir>,    --data-dir <dir>      Path to turtle file directory (default: ./data)
+  -db <dir>,   --database-dir <dir>  Path to virtuoso database directory (default: ./db)
+  -rq <dir>,   --sparql-dir <dir>    Path to test SPARQL query directory (default: ./sparql)
+  -p <int>,    --port <int>          Set Virtuoso port number (default: 8890)
+  -t <int>,    --threads <int>       Set number of threads for loading (default: 4)
+  -g <string>, --graph <string>      Set RDF graph name (default: http://bio.cow/graph)
+  -m <int>,    --max-memory <int>    Set maximum memory usage (in KB, default: system max memory)
 
 EOS
 }
@@ -324,7 +338,82 @@ EOS
 #
 main() {
   # argparse and run
-  case "${1}" in
+  if [[ $# -eq 0 ]]; then
+    print_help
+    exit 0
+  fi
+  while [[ $# -gt 0 ]]; do
+    key=${1}
+    case ${key} in
+      -v|--version)
+        print_version
+        exit 0
+        ;;
+      -h|--help)
+        print_help
+        exit 0
+        ;;
+      -d|--data-dir)
+        DATA_DIR="${2}"
+        shift
+        ;;
+      -db|--database-dir)
+        DB_DIR="${2}"
+        shift
+        ;;
+      -rq|--sparql-dir)
+        SPARQL_DIR="${2}"
+        shift
+        ;;
+      -p|--port)
+        VIRTUOSO_PORT="${2}"
+        shift
+        ;;
+      -t|--threads)
+        NUMBER_OF_THREADS="${2}"
+        shift
+        ;;
+      -g|--graph)
+        RDF_GRAPH_NAME="${2}"
+        shift
+        ;;
+      -m|--max-memory)
+        VIRTUOSO_MAX_MEMORY="${2}"
+        shift
+        ;;
+      "up")
+        CMD="up"
+        ;;
+      "down")
+        CMD="down"
+        ;;
+      "validate")
+        CMD="validate"
+        ;;
+      "load")
+        CMD="load"
+        ;;
+      "index")
+        CMD="index"
+        ;;
+      "clean")
+        CMD="clean"
+        ;;
+      "test")
+        CMD="test"
+        ;;
+      "status")
+        CMD="status"
+        ;;
+      *)
+        print_help
+        exit 0
+        ;;
+    esac
+    shift
+  done
+
+  case ${CMD} in
     "up")
       up
       ;;
@@ -349,22 +438,10 @@ main() {
     "status")
       status
       ;;
-    -v|--version)
-      print_version
-      exit 0
-      ;;
-    -h|--help)
-      print_help
-      exit 0
-      ;;
-    *)
-      print_help
-      exit 0
-      ;;
   esac
 }
 
 #
 # Run
 #
-main ${1}
+main ${@}
