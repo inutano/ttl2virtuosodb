@@ -6,12 +6,13 @@
 #          Tazro Inutano Ohta (https://github.com/inutano) for the rest
 #
 #set -eEux # For debugging
-VERSION="0.2.2"
+VERSION="0.2.3"
 
 #
 # DEFAULT SETTINGS: CHANGE IF NEEDED
 #
 VIRTUOSO_CONTAINER_IMAGE="openlink/virtuoso-opensource-7:7.2.6-r1-g0a3336c"
+TTL_VALIDATOR_CONTAINER_IMAGE="quay.io/inutano/turtle-validator:v1.0"
 DEFAULT_VIRTUOSO_PORT="8890"
 DEFAULT_NUMBER_OF_THREADS=4
 DEFAULT_RDF_GRAPH_NAME="http://bio.cow/graph"
@@ -197,6 +198,13 @@ virtuoso_down() {
   docker-compose rm
 }
 
+validate_ttl() {
+  find "${DATA_DIR}" -name "*ttl" -type f | while read ttl_path; do
+    printf "Validating $(basename ${ttl_path})... \t"
+    docker run --rm -v ${ttl_path}:/data.ttl "${TTL_VALIDATOR_CONTAINER_IMAGE}" ttl /data.ttl
+  done
+}
+
 load_ttl() {
   load_parallel
 }
@@ -237,6 +245,10 @@ up() {
 down() {
   virtuoso_down
   show_status
+}
+
+validate() {
+  validate_ttl
 }
 
 load() {
@@ -281,6 +293,7 @@ Usage:
 Subcommand:
   up                      Start Viruoso using docker-compose with db/viruoso.db
   down                    Stop Virtuoso, DB files remain in the db diretory
+  validate                Validate ttl files in data directory
   load                    Start Virtuoso and load data; add data to the existing
                           graph if virtuoso.db already exists
   index                   Create text index of loaded RDF data
@@ -313,6 +326,9 @@ main() {
       ;;
     "down")
       down
+      ;;
+    "validate")
+      validate
       ;;
     "load")
       load
