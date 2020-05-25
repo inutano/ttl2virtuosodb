@@ -30,7 +30,7 @@ setup_t2v() {
 
 set_directories() {
   # Directories
-  BASE_DIR="$(cd "$(dirname ${0})/.." && pwd -P)"
+  BASE_DIR="$(pwd -P)"
 
   DATA_DIR="${BASE_DIR}/data"
   mkdir -p "${DATA_DIR}"
