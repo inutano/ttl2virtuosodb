@@ -238,20 +238,24 @@ show_status() {
 # Subcommands
 #
 up() {
+  setup_t2v
   virtuoso_up
   show_status
 }
 
 down() {
+  setup_t2v
   virtuoso_down
   show_status
 }
 
 validate() {
+  setup_t2v
   validate_ttl
 }
 
 load() {
+  setup_t2v
   virtuoso_up
   load_ttl
   test_sparql
@@ -259,6 +263,7 @@ load() {
 }
 
 index() {
+  setup_t2v
   virtuoso_up
   create_text_index
   test_sparql
@@ -266,6 +271,7 @@ index() {
 }
 
 test() {
+  setup_t2v
   virtuoso_up
   test_sparql
   show_status
@@ -276,6 +282,7 @@ status() {
 }
 
 clean() {
+  setup_t2v
   rm -f "${docker_compose_yml}"
   rm -fr "${DB_DIR}"/virtuoso*
 }
@@ -316,9 +323,6 @@ EOS
 # Main function
 #
 main() {
-  # Setup directories, graph name, memory usage
-  setup_t2v
-
   # argparse and run
   case "${1}" in
     "up")
