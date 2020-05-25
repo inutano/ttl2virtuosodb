@@ -1,0 +1,5 @@
+select *
+where {
+  ?s ?p ?o . filter (bif:contains(?o,  '"*name"'))
+}
+limit 5
