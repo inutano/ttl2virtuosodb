@@ -21,15 +21,18 @@ DEFAULT_RDF_GRAPH_NAME="http://bio.cow/graph"
 # Setup functions
 #
 setup_t2v() {
-  set_directories
+  setup_virtuoso
+  setup_dirs
+}
+
+setup_virtuoso() {
   set_port_number
   set_number_of_threads
   set_graph_name
   set_max_memory
 }
 
-set_directories() {
-  # Directories
+setup_dirs() {
   BASE_DIR="$(pwd -P)"
   set_data_dir
   set_db_dir
@@ -291,11 +294,12 @@ test() {
 }
 
 status() {
+  setup_dirs
   show_status
 }
 
 clean() {
-  setup_t2v
+  setup_dirs
   rm -f "${DOCKER_COMPOSE_YML_PATH}"
   rm -fr "${DB_DIR}"/virtuoso*
 }
