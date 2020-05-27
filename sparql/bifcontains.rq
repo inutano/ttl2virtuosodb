@@ -1,5 +1,5 @@
 select *
 where {
-  ?s ?p ?o . filter (bif:contains(?o,  '"*name"'))
+  ?s ?p ?o . filter (bif:contains(?o,  '"DRX0*"'))
 }
 limit 5
