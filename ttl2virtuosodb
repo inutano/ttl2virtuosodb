@@ -247,7 +247,10 @@ test_sparql() {
 }
 
 show_status() {
+  printf "Running Docker containers:\n"
   docker ps
+  printf "\n"
+  printf "Docker-compose status:\n"
   docker-compose --file ${DOCKER_COMPOSE_YML_PATH} ps
 }
 
