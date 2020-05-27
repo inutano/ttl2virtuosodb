@@ -229,7 +229,7 @@ query_sparql() {
   local query=${1}
   local endpoint_url="http://localhost:${VIRTUOSO_PORT}/sparql"
 
-  if [[ ! -z $(which jq) ]]; then
+  if [[ ! -z $(which jq 2>/dev/null) ]]; then
     query_header="application/json"
     curl -s --header "Accept: ${query_header}" --data-urlencode "query=$(cat ${query})" ${endpoint_url} | jq .
   else
