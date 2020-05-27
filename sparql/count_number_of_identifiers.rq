@@ -1,0 +1,5 @@
+prefix dct: <http://purl.obolibrary.org/obo/>
+select count(?id) as ?identifiers
+where {
+  ?s dct:identifier ?id .
+}

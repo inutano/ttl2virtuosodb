@@ -1,0 +1,4 @@
+select (count(*) as ?triples)
+where {
+  ?s ?p ?o .
+}
