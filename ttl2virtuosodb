@@ -48,7 +48,7 @@ set_data_dir() {
 
 set_db_dir() {
   if [[ -z ${DB_DIR} ]]; then
-    DB_DIR="${BASE_DIR}/sparql"
+    DB_DIR="${BASE_DIR}/db"
     mkdir -p "${DB_DIR}"
   else
     DB_DIR=$(cd ${DB_DIR} && pwd -P)
