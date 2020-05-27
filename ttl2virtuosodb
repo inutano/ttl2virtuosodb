@@ -240,8 +240,9 @@ query_sparql() {
 
 test_sparql() {
   find  "${SPARQL_DIR}" -name '*.rq' -type f | while read query; do
-    echo "Query: $(basename ${query})"
+    printf "Query: $(basename ${query})\n"
     query_sparql ${query}
+    printf "\n\n"
   done
 }
 
@@ -305,7 +306,7 @@ clean() {
 }
 
 print_version() {
-  echo "ttl2virtuosodb: ${VERSION}"
+  printf "ttl2virtuosodb: ${VERSION}\n"
 }
 
 print_help() {
