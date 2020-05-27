@@ -34,12 +34,7 @@ set_directories() {
   set_data_dir
   set_db_dir
   set_sparql_dir
-
-  # Files
-  docker_compose_yml="${BASE_DIR}/docker-compose.yml"
-  virtuoso_db_file="${DB_DIR}/virtuoso.db"
-
-  cd ${BASE_DIR}
+  set_compose_path
 }
 
 set_data_dir() {
@@ -67,6 +62,13 @@ set_sparql_dir() {
   else
     SPARQL_DIR=$(cd ${SPARQL_DIR} && pwd -P)
   fi
+}
+
+set_compose_path() {
+  if [[ -z ${DOCKER_COMPOSE_YML_DIR} ]]; then
+    DOCKER_COMPOSE_YML_DIR="${BASE_DIR}"
+  fi
+  DOCKER_COMPOSE_YML_PATH="${DOCKER_COMPOSE_YML_DIR}/ttl2virtuosodb-compose.yml"
 }
 
 set_port_number() {
@@ -133,8 +135,8 @@ set_buffers() {
 # Function to load data to virtuoso
 #
 generate_docker_compose_yml() {
-  if [[ ! -e "${docker_compose_yml}" ]]; then
-    cat <<EOS > "${docker_compose_yml}"
+  if [[ ! -e "${DOCKER_COMPOSE_YML_PATH}" ]]; then
+    cat <<EOS > "${DOCKER_COMPOSE_YML_PATH}"
 version: '3'
 services:
   virtuoso:
@@ -201,12 +203,12 @@ exec_isql() {
 #
 virtuoso_up() {
   generate_docker_compose_yml
-  docker-compose up -d
+  docker-compose --file ${DOCKER_COMPOSE_YML_PATH} up -d
 }
 
 virtuoso_down() {
-  docker-compose down
-  docker-compose rm
+  docker-compose --file ${DOCKER_COMPOSE_YML_PATH} down
+  docker-compose --file ${DOCKER_COMPOSE_YML_PATH} rm
 }
 
 validate_ttl() {
@@ -242,7 +244,7 @@ test_sparql() {
 
 show_status() {
   docker ps
-  docker-compose ps
+  docker-compose --file ${DOCKER_COMPOSE_YML_PATH} ps
 }
 
 #
@@ -294,7 +296,7 @@ status() {
 
 clean() {
   setup_t2v
-  rm -f "${docker_compose_yml}"
+  rm -f "${DOCKER_COMPOSE_YML_PATH}"
   rm -fr "${DB_DIR}"/virtuoso*
 }
 
@@ -325,6 +327,8 @@ Options:
   -d <dir>,    --data-dir <dir>      Path to turtle file directory (default: ./data)
   -db <dir>,   --database-dir <dir>  Path to virtuoso database directory (default: ./db)
   -rq <dir>,   --sparql-dir <dir>    Path to test SPARQL query directory (default: ./sparql)
+  --compose <dir>                    Path to directory where ttl2virtuosodb-compose.yml
+                                     will be saved (default: .)
   -p <int>,    --port <int>          Set Virtuoso port number (default: 8890)
   -t <int>,    --threads <int>       Set number of threads for loading (default: 4)
   -g <string>, --graph <string>      Set RDF graph name (default: http://bio.cow/graph)
