@@ -6,7 +6,7 @@
 #          Tazro Inutano Ohta (https://github.com/inutano) for the rest
 #
 #set -eEux # For debugging
-VERSION="0.4.0"
+VERSION="0.4.1"
 
 #
 # DEFAULT SETTINGS: CHANGE IF NEEDED
@@ -167,7 +167,6 @@ EOS
 }
 
 load_parallel() {
-  wait_virtuoso
   exec_isql "DB.DBA.RDF_OBJ_FT_RULE_ADD (null, null, 'All');"
   exec_isql "DB.DBA.RDF_OBJ_FT_RULE_DEL (null, null, 'All');"
 
@@ -182,12 +181,10 @@ load_parallel() {
 }
 
 create_text_index() {
-  wait_virtuoso
   exec_isql "DB.DBA.VT_INC_INDEX_DB_DBA_RDF_OBJ ();"            # Create text index synchronously
 }
 
 disable_checkpoint() {
-  wait_virtuoso
   exec_isql "checkpoint_interval (0);"                           # Disable automatic checkpoint
 }
 
@@ -207,6 +204,7 @@ exec_isql() {
 virtuoso_up() {
   generate_docker_compose_yml
   docker-compose --file ${DOCKER_COMPOSE_YML_PATH} up -d
+  wait_virtuoso
 }
 
 virtuoso_down() {
