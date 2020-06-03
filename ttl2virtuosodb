@@ -60,7 +60,7 @@ setup_virtuoso() {
 }
 
 setup_dirs() {
-  message "T2V: Configure diretories..\n" "info"
+  message "T2V: Configure directories..\n" "info"
   BASE_DIR="$(pwd -P)"
   set_data_dir
   set_db_dir
@@ -366,7 +366,7 @@ Usage:
 
 Subcommand:
   up                      Start Viruoso using docker-compose with db/viruoso.db
-  down                    Stop Virtuoso, DB files remain in the db diretory
+  down                    Stop Virtuoso, DB files remain in the db directory
   validate                Validate ttl files in data directory
   load                    Start Virtuoso and load data; add data to the existing
                           graph if virtuoso.db already exists
