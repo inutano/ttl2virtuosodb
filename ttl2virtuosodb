@@ -228,7 +228,7 @@ services:
     container_name: grasp
     environment:
       RESOURCES: /resources
-    volumes
+    volumes:
       - ${GRASP_RESOURCE_DIR}:/resources
     ports:
       - "4000:4000"
