@@ -6,7 +6,7 @@
 #          Tazro Inutano Ohta (https://github.com/inutano) for the rest
 #
 #set -eEux # For debugging
-VERSION="0.4.1"
+VERSION="0.4.2"
 
 #
 # DEFAULT SETTINGS: CHANGE IF NEEDED
