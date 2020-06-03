@@ -241,15 +241,17 @@ load_parallel() {
   message "T2V: Start loading ttl files..\n" "info"
 
   exec_isql "DB.DBA.VT_BATCH_UPDATE ('DB.DBA.RDF_OBJ', 'ON', null);" # Disable text index, make it fully manual
-  exec_isql "ld_dir_all('/data', '*.ttl', '${RDF_GRAPH_NAME}');" # Load directory of turtle files
+  exec_isql "checkpoint;"                                            # Checkpoint to enable setting
+
+  exec_isql "ld_dir_all('/data', '*.ttl', '${RDF_GRAPH_NAME}');"     # Load directory of turtle files
 
   for i in $(seq ${NUMBER_OF_THREADS}); do
-    exec_isql "rdf_loader_run();" &                              # Run loader in parallel and sent background
+    exec_isql "rdf_loader_run();" &                                  # Run loader in parallel and sent background
   done
   wait
 
-  exec_isql "checkpoint;"                                        # Checkpoint after loading
-  exec_isql "checkpoint_interval (0);"                           # Disable automatic checkpoint
+  exec_isql "checkpoint;"                                            # Checkpoint after loading
+  exec_isql "checkpoint_interval (0);"                               # Disable automatic checkpoint
 
   message "T2V: Done.\n" "info"
 }
