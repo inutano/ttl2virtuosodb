@@ -13,6 +13,8 @@ VERSION="0.4.2"
 #
 VIRTUOSO_CONTAINER_IMAGE="openlink/virtuoso-opensource-7:7.2.6-r1-g0a3336c"
 TTL_VALIDATOR_CONTAINER_IMAGE="quay.io/inutano/turtle-validator:v1.0"
+SPARQL_PROXY_IMAGE="dbcls/sparql-proxy:snapshot-a8c881c"
+
 DEFAULT_VIRTUOSO_PORT="8890"
 DEFAULT_NUMBER_OF_THREADS=4
 DEFAULT_RDF_GRAPH_NAME="http://bio.cow/graph"
@@ -198,6 +200,17 @@ services:
     volumes:
       - ${DB_DIR}:/database
       - ${DATA_DIR}:/data
+  sparql-proxy:
+    image: ${SPARQL_PROXY_IMAGE}
+    container_name: sparql-proxy
+    environment:
+      PORT: 3000
+      SPARQL_BACKEND: http://virtuoso:${VIRTUOSO_PORT}/sparql
+      ADMIN_USER: admin
+      ADMIN_PASSWORD: password
+    ports:
+      - "3000:3000"
+    user: "${UID:-0}:${GID:-0}"
 EOS
   fi
 }
