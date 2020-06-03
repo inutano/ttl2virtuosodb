@@ -240,10 +240,8 @@ EOS
 load_parallel() {
   message "T2V: Start loading ttl files..\n" "info"
 
-  exec_isql "DB.DBA.VT_BATCH_UPDATE ('DB.DBA.RDF_OBJ', 'ON', null);" # Disable text index, make it fully manual
-  exec_isql "checkpoint;"                                            # Checkpoint to enable setting
-
   exec_isql "ld_dir_all('/data', '*.ttl', '${RDF_GRAPH_NAME}');"     # Load directory of turtle files
+  exec_isql "DB.DBA.VT_BATCH_UPDATE ('DB.DBA.RDF_OBJ', 'ON', null);" # Disable text index, make it fully manual
 
   for i in $(seq ${NUMBER_OF_THREADS}); do
     exec_isql "rdf_loader_run();" &                                  # Run loader in parallel and sent background
@@ -257,6 +255,7 @@ load_parallel() {
 }
 
 create_text_index() {
+  exec_isql "DB.DBA.RDF_OBJ_FT_RULE_ADD (null, null, 'All');"
   exec_isql "DB.DBA.VT_INC_INDEX_DB_DBA_RDF_OBJ ();"            # Create text index synchronously
 }
 
