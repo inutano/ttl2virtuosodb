@@ -188,8 +188,7 @@ set_buffers() {
 # Function to load data to virtuoso
 #
 generate_docker_compose_yml() {
-  if [[ ! -e "${DOCKER_COMPOSE_YML_PATH}" ]]; then
-    cat <<EOS > "${DOCKER_COMPOSE_YML_PATH}"
+  cat <<EOS > "${DOCKER_COMPOSE_YML_PATH}"
 version: '3'
 services:
   virtuoso:
@@ -234,7 +233,6 @@ services:
       - "4000:4000"
     user: "${UID:-0}:${GID:-0}"
 EOS
-  fi
 }
 
 load_parallel() {
