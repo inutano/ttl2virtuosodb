@@ -227,7 +227,7 @@ services:
     image: ${GRASP_IMAGE}
     container_name: grasp
     environment:
-      RESOURCES: /resources
+      RESOURCES_DIR: /resources
     volumes:
       - ${GRASP_RESOURCE_DIR}:/resources
     ports:
@@ -416,7 +416,7 @@ Options:
   -d <dir>,    --data-dir <dir>      Path to turtle file directory (default: ./data)
   -db <dir>,   --database-dir <dir>  Path to virtuoso database directory (default: ./db)
   -rq <dir>,   --sparql-dir <dir>    Path to test SPARQL query directory (default: ./sparql)
-  --grasp <dir>                      Path to grasp resource directory (default: ./grasp)
+  --grasp-dir <dir>                      Path to grasp resource directory (default: ./grasp)
   --compose <dir>                    Path to directory where ttl2virtuosodb-compose.yml
                                      will be saved (default: .)
   -p <int>,    --port <int>          Set Virtuoso port number (default: 8890)
