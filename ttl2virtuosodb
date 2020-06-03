@@ -18,6 +18,32 @@ DEFAULT_NUMBER_OF_THREADS=4
 DEFAULT_RDF_GRAPH_NAME="http://bio.cow/graph"
 
 #
+# Printt function
+#
+message() {
+  case $2 in
+    green|success)
+      COLOR="92m";
+      ;;
+    yellow|warning)
+      COLOR="93m";
+      ;;
+    red|danger)
+      COLOR="91m";
+      ;;
+    blue|info)
+      COLOR="96m";
+      ;;
+    *)
+      COLOR="0m"
+      ;;
+  esac
+  STARTCOLOR="\e[$COLOR";
+  ENDCOLOR="\e[0m";
+  printf "$STARTCOLOR%b$ENDCOLOR" "$1";
+}
+
+#
 # Setup functions
 #
 setup_t2v() {
@@ -26,6 +52,7 @@ setup_t2v() {
 }
 
 setup_virtuoso() {
+  message "T2V: Configure Virtuoso..\n" "info"
   set_port_number
   set_number_of_threads
   set_graph_name
@@ -33,6 +60,7 @@ setup_virtuoso() {
 }
 
 setup_dirs() {
+  message "T2V: Configure diretories..\n" "info"
   BASE_DIR="$(pwd -P)"
   set_data_dir
   set_db_dir
@@ -47,6 +75,7 @@ set_data_dir() {
   else
     DATA_DIR=$(cd ${DATA_DIR} && pwd -P)
   fi
+  message "T2V:   DATA DIR: ${DATA_DIR}\n" "info"
 }
 
 set_db_dir() {
@@ -56,6 +85,7 @@ set_db_dir() {
   else
     DB_DIR=$(cd ${DB_DIR} && pwd -P)
   fi
+  message "T2V:   DB DIR: ${DB_DIR}\n" "info"
 }
 
 set_sparql_dir() {
@@ -65,6 +95,7 @@ set_sparql_dir() {
   else
     SPARQL_DIR=$(cd ${SPARQL_DIR} && pwd -P)
   fi
+  message "T2V:   SPARQL DIR: ${SPARQL_DIR}\n" "info"
 }
 
 set_compose_path() {
@@ -72,24 +103,28 @@ set_compose_path() {
     DOCKER_COMPOSE_YML_DIR="${BASE_DIR}"
   fi
   DOCKER_COMPOSE_YML_PATH="${DOCKER_COMPOSE_YML_DIR}/ttl2virtuosodb-compose.yml"
+  message "T2V:   COMPOSE YAML: ${DOCKER_COMPOSE_YML_PATH}\n" "info"
 }
 
 set_port_number() {
   if [[ -z "${VIRTUOSO_PORT}" ]]; then
     VIRTUOSO_PORT=${DEFAULT_VIRTUOSO_PORT}
   fi
+  message "T2V:   Virtuoso port: ${VIRTUOSO_PORT}\n" "info"
 }
 
 set_number_of_threads() {
   if [[ -z "${NUMBER_OF_THREADS}" ]]; then
     NUMBER_OF_THREADS="${DEFAULT_NUMBER_OF_THREADS}"
   fi
+  message "T2V:   Number of threads: ${NUMBER_OF_THREADS}\n" "info"
 }
 
 set_graph_name() {
   if [[ -z "${RDF_GRAPH_NAME}" ]]; then
     RDF_GRAPH_NAME="${DEFAULT_RDF_GRAPH_NAME}"
   fi
+  message "T2V:   RDF Graph name: ${RDF_GRAPH_NAME}\n" "info"
 }
 
 # Define memory amount to use for loading
@@ -106,10 +141,11 @@ set_max_memory() {
     esac
   fi
   set_buffers
+  message "T2V:   Virtuoso max memory: ${VIRTUOSO_MAX_MEMORY}\n" "info"
 }
 
 set_buffers() {
-  # Set paramerters based on the total amount of VIRTUOSO_MAX_MEMORYory
+  # Set paramerters based on the total amount of VIRTUOSO_MAX_MEMORY
   if [[ ${VIRTUOSO_MAX_MEMORY} -ge 64000000 ]]; then
     NumOfBuffers=5450000
     MaxDirtyBuffers=4000000
@@ -167,6 +203,7 @@ EOS
 }
 
 load_parallel() {
+  message "T2V: Start loading ttl files..\n" "info"
   exec_isql "DB.DBA.RDF_OBJ_FT_RULE_ADD (null, null, 'All');"
   exec_isql "DB.DBA.RDF_OBJ_FT_RULE_DEL (null, null, 'All');"
 
@@ -178,6 +215,7 @@ load_parallel() {
   wait
 
   exec_isql "checkpoint;"                                        # Checkpoint after loading
+  message "T2V: Done.\n" "info"
 }
 
 create_text_index() {
@@ -189,9 +227,11 @@ disable_checkpoint() {
 }
 
 wait_virtuoso() {
+  message "T2V: Waiting for Virtuoso...\n" "info"
   while [[ -z $(curl -s "localhost:${VIRTUOSO_PORT}/sparql" 2>/dev/null | head -c 5) ]] ; do
     sleep 5
   done
+  message "T2V: Virtuoso is raedy to accept query.\n" "info"
 }
 
 exec_isql() {
@@ -213,10 +253,12 @@ virtuoso_down() {
 }
 
 validate_ttl() {
+  message "T2V: Start turtle validation..\n" "info"
   find "${DATA_DIR}" -name "*ttl" -type f | while read ttl_path; do
     printf "Validating $(basename ${ttl_path})... \t"
     docker run --rm -v ${ttl_path}:/data.ttl "${TTL_VALIDATOR_CONTAINER_IMAGE}" ttl /data.ttl
   done
+  message "T2V: Done.\n" "info"
 }
 
 load_ttl() {
@@ -237,11 +279,13 @@ query_sparql() {
 }
 
 test_sparql() {
+  message "T2V: Start testing..\n" "info"
   find  "${SPARQL_DIR}" -name '*.rq' -type f | while read query; do
     printf "Query: $(basename ${query})\n"
     query_sparql ${query}
     printf "\n\n"
   done
+  message "T2V: Done.\n" "info"
 }
 
 show_status() {
@@ -259,12 +303,14 @@ up() {
   setup_t2v
   virtuoso_up
   show_status
+  message "T2V: Virtuoso server is ready at locahost:${VIRTUOSO_PORT}\n" "info"
 }
 
 down() {
   setup_t2v
   virtuoso_down
   show_status
+  message "T2V: Virtuoso server is down.\n" "info"
 }
 
 validate() {
@@ -301,9 +347,11 @@ status() {
 }
 
 clean() {
+  message "T2V: Cleaning..\n" "info"
   setup_dirs
   rm -f "${DOCKER_COMPOSE_YML_PATH}"
   rm -fr "${DB_DIR}"/virtuoso*
+  message "T2V: Done.\n" "info"
 }
 
 print_version() {
