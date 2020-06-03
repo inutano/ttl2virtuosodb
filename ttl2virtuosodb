@@ -315,7 +315,7 @@ query_sparql() {
 
 test_sparql() {
   message "T2V: Start testing..\n" "info"
-  find  "${SPARQL_DIR}" -name '*.rq' -type f | while read query; do
+  find  "${SPARQL_DIR}/" -name '*.rq' -type f | while read query; do
     printf "Query: $(basename ${query})\n"
     query_sparql ${query}
     printf "\n\n"
