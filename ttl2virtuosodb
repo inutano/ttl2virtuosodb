@@ -238,6 +238,8 @@ EOS
 load_parallel() {
   message "T2V: Start loading ttl files..\n" "info"
 
+  exec_isql "DB.DBA.RDF_OBJ_FT_RULE_DEL(null, null, 'ALL');"
+
   exec_isql "ld_dir_all('/data', '*.ttl', '${RDF_GRAPH_NAME}');"     # Load directory of turtle files
   exec_isql "DB.DBA.VT_BATCH_UPDATE ('DB.DBA.RDF_OBJ', 'ON', null);" # Disable text index, make it fully manual
 
