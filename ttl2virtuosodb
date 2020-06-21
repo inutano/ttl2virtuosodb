@@ -6,15 +6,13 @@
 #          Tazro Inutano Ohta (https://github.com/inutano) for the rest
 #
 #set -eEux # For debugging
-VERSION="0.4.2"
+VERSION="0.5.0"
 
 #
 # DEFAULT SETTINGS: CHANGE IF NEEDED
 #
 VIRTUOSO_CONTAINER_IMAGE="openlink/virtuoso-opensource-7:7.2.6-r1-g0a3336c"
 TTL_VALIDATOR_CONTAINER_IMAGE="quay.io/inutano/turtle-validator:v1.0"
-SPARQL_PROXY_IMAGE="dbcls/sparql-proxy:snapshot-a8c881c"
-GRASP_IMAGE="inutano/grasp:snapshot-8f6bb0f"
 
 DEFAULT_VIRTUOSO_PORT="8890"
 DEFAULT_NUMBER_OF_THREADS=4
@@ -68,7 +66,6 @@ setup_dirs() {
   set_data_dir
   set_db_dir
   set_sparql_dir
-  set_grasp_resource_dir
   set_compose_path
 }
 
@@ -100,16 +97,6 @@ set_sparql_dir() {
     SPARQL_DIR=$(cd ${SPARQL_DIR} && pwd -P)
   fi
   message "T2V:   SPARQL DIR: ${SPARQL_DIR}\n" "info"
-}
-
-set_grasp_resource_dir() {
-  if [[ -z ${GRASP_RESOURCE_DIR} ]]; then
-    GRASP_RESOURCE_DIR="${BASE_DIR}/grasp"
-    mkdir -p "${GRASP_RESOURCE_DIR}"
-  else
-    GRASP_RESOURCE_DIR=$(cd ${GRASP_RESOURCE_DIR} && pwd -P)
-  fi
-  message "T2V:   Grasp resource DIR: ${GRASP_RESOURCE_DIR}\n" "info"
 }
 
 set_compose_path() {
@@ -211,27 +198,6 @@ services:
     volumes:
       - ${DB_DIR}:/database
       - ${DATA_DIR}:/data
-  sparql-proxy:
-    image: ${SPARQL_PROXY_IMAGE}
-    container_name: sparql-proxy
-    environment:
-      PORT: 3000
-      SPARQL_BACKEND: http://virtuoso:${VIRTUOSO_PORT}/sparql
-      ADMIN_USER: admin
-      ADMIN_PASSWORD: password
-    ports:
-      - "3000:3000"
-    user: "${UID:-0}:${GID:-0}"
-  grasp:
-    image: ${GRASP_IMAGE}
-    container_name: grasp
-    environment:
-      RESOURCES_DIR: /resources
-    volumes:
-      - ${GRASP_RESOURCE_DIR}:/resources
-    ports:
-      - "4000:4000"
-    user: "${UID:-0}:${GID:-0}"
 EOS
 }
 
@@ -414,7 +380,6 @@ Options:
   -d <dir>,    --data-dir <dir>      Path to turtle file directory (default: ./data)
   -db <dir>,   --database-dir <dir>  Path to virtuoso database directory (default: ./db)
   -rq <dir>,   --sparql-dir <dir>    Path to test SPARQL query directory (default: ./sparql)
-  --grasp-dir <dir>                      Path to grasp resource directory (default: ./grasp)
   --compose <dir>                    Path to directory where ttl2virtuosodb-compose.yml
                                      will be saved (default: .)
   -p <int>,    --port <int>          Set Virtuoso port number (default: 8890)
@@ -455,10 +420,6 @@ main() {
         ;;
       -rq|--sparql-dir)
         SPARQL_DIR="${2}"
-        shift
-        ;;
-      --grasp-dir)
-        GRASP_RESOURCE_DIR="${2}"
         shift
         ;;
       -p|--port)
